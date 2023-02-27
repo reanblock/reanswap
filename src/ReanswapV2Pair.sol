@@ -22,7 +22,7 @@ error BalanceOverflow();
 
 contract ReanswapV2Pair is ERC20, Math {
     using UQ112x112 for uint224;
-    
+
     uint256 constant MINIMUM_LIQUIDITY = 1000;
 
     address public token0;
@@ -168,6 +168,22 @@ contract ReanswapV2Pair is ERC20, Math {
         if (balance0 > type(uint112).max || balance1 > type(uint112).max)
             revert BalanceOverflow();
 
+        // 
+        // https://docs.uniswap.org/assets/images/v2_onchain_price_data-c051ebca6a5882e3f2ad758fa46cbf5e.png
+        // https://docs.uniswap.org/assets/images/v2_twap-fdc82ab82856196510db6b421cce9204.png
+
+        /*
+        NOTE: we want overflow here so we use the unchecked keyword
+        The UniswapV2Pair cumulative price variables are designed to eventually overflow, 
+        i.e. price0CumulativeLast and price1CumulativeLast and blockTimestampLast will overflow through 0.
+
+        This should not pose an issue to your oracle design, as the price average computation is concerned 
+        with differences (i.e. subtraction) between two separate observations of a cumulative price variable. 
+        Subtracting between two cumulative price values will result in a number that fits within the range 
+        of uint256 as long as the observations are made for periods of max 2^32 seconds, or ~136 years. 
+
+        explaination here: https://youtu.be/Ar4Ik7Bov0U?t=532
+        */
         unchecked {
             uint32 timeElapsed = uint32(block.timestamp) - blockTimestampLast;
 
