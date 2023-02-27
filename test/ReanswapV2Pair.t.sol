@@ -247,12 +247,35 @@ contract ReanswapV2PairTest is Test {
         assertReserves(1 ether + 0.1 ether, 2 ether - 0.09 ether);
     }
 
+    function testSwapOverpriced() public {
+        token0.transfer(address(pair), 1 ether);
+        token1.transfer(address(pair), 2 ether);
+        pair.mint();
+
+        token0.transfer(address(pair), 0.1 ether);
+
+        vm.expectRevert(encodeError("InvalidK()"));
+        pair.swap(0, 0.36 ether, address(this));
+
+        assertEq(
+            token0.balanceOf(address(this)),
+            10 ether - 1 ether - 0.1 ether,
+            "unexpected token0 balance"
+        );
+        assertEq(
+            token1.balanceOf(address(this)),
+            10 ether - 2 ether,
+            "unexpected token1 balance"
+        );
+        assertReserves(1 ether, 2 ether);
+    }
+
     // helper functions
 
     function assertReserves(uint256 expectedReserve0, uint256 expectedReserve1)
         internal
     {
-        (uint256 reserve0, uint256 reserve1) = pair.getReserves();
+        (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
         assertEq(reserve0, expectedReserve0, "unexpected reserve0");
         assertEq(reserve1, expectedReserve1, "unexpected reserve1");
     }
