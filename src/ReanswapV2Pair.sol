@@ -36,6 +36,15 @@ contract ReanswapV2Pair is ERC20, Math {
         address indexed to
     );
 
+    modifier nonReentrant() {
+        require(!isEntered);
+        isEntered = true;
+
+        _;
+
+        isEntered = false;
+    }
+
     constructor(address _token0, address _token1) ERC20("ReanswapV2 Pair", "RUNIV2", 18) {
         token0 = _token0;
         token1 = _token1;
@@ -100,7 +109,7 @@ contract ReanswapV2Pair is ERC20, Math {
         uint256 amount0Out,
         uint256 amount1Out,
         address to
-    ) public {
+    ) public nonReentrant {
         // check user actually wants to trade something!
         if (amount0Out == 0 && amount1Out == 0)
             revert InsufficientOutputAmount();
