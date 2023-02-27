@@ -9,14 +9,20 @@ contract ReanswapV2PairTest is Test {
     ERC20Mintable token0;
     ERC20Mintable token1;
     ReanswapV2Pair pair;
+    TestUser testUser;
 
     function setUp() public {
+        testUser = new TestUser();
+
         token0 = new ERC20Mintable("Token A", "TKNA");
         token1 = new ERC20Mintable("Token B", "TKNB");
         pair = new ReanswapV2Pair(address(token0), address(token1));
 
         token0.mint(10 ether, address(this));
         token1.mint(10 ether, address(this));
+
+        token0.mint(10 ether, address(testUser));
+        token1.mint(10 ether, address(testUser));
     }
 
     function testMintBootstrap() public {
@@ -96,6 +102,35 @@ contract ReanswapV2PairTest is Test {
         assertEq(token1.balanceOf(address(this)), 10 ether - 1000);
     }
 
+    function testBurnUnbalancedDifferentUsers() public {
+        testUser.provideLiquidity(
+            address(pair),
+            address(token0),
+            address(token1),
+            1 ether,
+            1 ether
+        );
+
+        assertEq(pair.balanceOf(address(this)), 0);
+        assertEq(pair.balanceOf(address(testUser)), 1 ether - 1000);
+        assertEq(pair.totalSupply(), 1 ether);
+
+        token0.transfer(address(pair), 2 ether);
+        token1.transfer(address(pair), 1 ether);
+
+        pair.mint(); // + 1 LP
+
+        assertEq(pair.balanceOf(address(this)), 1 ether);
+
+        pair.burn();
+
+        assertEq(pair.balanceOf(address(this)), 0);
+        assertReserves(1.5 ether, 1 ether);
+        assertEq(pair.totalSupply(), 1 ether);
+        assertEq(token0.balanceOf(address(this)), 10 ether - 0.5 ether);
+        assertEq(token1.balanceOf(address(this)), 10 ether);
+    }
+
     // helper functions
 
     function assertReserves(uint256 expectedReserve0, uint256 expectedReserve1)
@@ -104,5 +139,26 @@ contract ReanswapV2PairTest is Test {
         (uint256 reserve0, uint256 reserve1) = pair.getReserves();
         assertEq(reserve0, expectedReserve0, "unexpected reserve0");
         assertEq(reserve1, expectedReserve1, "unexpected reserve1");
+    }
+}
+
+contract TestUser {
+    function provideLiquidity(
+        address pairAddress_,
+        address token0Address_,
+        address token1Address_,
+        uint256 amount0_,
+        uint256 amount1_
+    ) public {
+        ERC20(token0Address_).transfer(pairAddress_, amount0_);
+        ERC20(token1Address_).transfer(pairAddress_, amount1_);
+
+        ReanswapV2Pair(pairAddress_).mint();
+    }
+
+    function removeLiquidity(address pairAddress_) public {
+        uint256 liquidity = ERC20(pairAddress_).balanceOf(address(this));
+        ERC20(pairAddress_).transfer(pairAddress_, liquidity);
+        ReanswapV2Pair(pairAddress_).burn();
     }
 }
