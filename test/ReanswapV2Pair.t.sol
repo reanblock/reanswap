@@ -30,6 +30,22 @@ contract ReanswapV2PairTest is Test {
         assertEq(pair.totalSupply(), 1 ether);
     }
 
+    function testMintWhenTheresLiquidity() public {
+        token0.transfer(address(pair), 1 ether);
+        token1.transfer(address(pair), 1 ether);
+
+        pair.mint(); // + 1 LP
+
+        token0.transfer(address(pair), 2 ether);
+        token1.transfer(address(pair), 2 ether);
+
+        pair.mint(); // + 2 LP
+
+        assertEq(pair.balanceOf(address(this)), 3 ether - 1000);
+        assertEq(pair.totalSupply(), 3 ether);
+        assertReserves(3 ether, 3 ether);
+    }
+
     // helper functions
 
     function assertReserves(uint256 expectedReserve0, uint256 expectedReserve1)
