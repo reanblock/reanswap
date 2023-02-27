@@ -46,6 +46,22 @@ contract ReanswapV2PairTest is Test {
         assertReserves(3 ether, 3 ether);
     }
 
+    function testMintUnbalanced() public {
+        token0.transfer(address(pair), 1 ether);
+        token1.transfer(address(pair), 1 ether);
+
+        pair.mint(); // + 1 LP
+        assertEq(pair.balanceOf(address(this)), 1 ether - 1000);
+        assertReserves(1 ether, 1 ether);
+
+        token0.transfer(address(pair), 2 ether);
+        token1.transfer(address(pair), 1 ether);
+
+        pair.mint(); // + 1 LP
+        assertEq(pair.balanceOf(address(this)), 2 ether - 1000);
+        assertReserves(3 ether, 2 ether);
+    }
+
     // helper functions
 
     function assertReserves(uint256 expectedReserve0, uint256 expectedReserve1)
