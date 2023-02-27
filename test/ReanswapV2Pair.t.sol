@@ -68,6 +68,14 @@ contract ReanswapV2PairTest is Test {
         assertReserves(3 ether, 2 ether);
     }
 
+    function testMintZeroLiquidity() public {
+        token0.transfer(address(pair), 1000);
+        token1.transfer(address(pair), 1000);
+
+        vm.expectRevert(encodeError("InsufficientLiquidityMinted()"));
+        pair.mint();
+    }
+
     function testBurn() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
@@ -139,6 +147,14 @@ contract ReanswapV2PairTest is Test {
         (uint256 reserve0, uint256 reserve1) = pair.getReserves();
         assertEq(reserve0, expectedReserve0, "unexpected reserve0");
         assertEq(reserve1, expectedReserve1, "unexpected reserve1");
+    }
+
+    function encodeError(string memory error)
+        internal
+        pure
+        returns (bytes memory encoded)
+    {
+        encoded = abi.encodeWithSignature(error);
     }
 }
 
