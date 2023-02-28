@@ -83,7 +83,9 @@ contract ReanswapV2PairTest is Test {
         token1.transfer(address(pair), 1 ether);
 
         pair.mint(address(this));
-        pair.burn();
+        uint256 liquidity = pair.balanceOf(address(this));
+        pair.transfer(address(pair), liquidity);
+        pair.burn(address(this));
 
         assertEq(pair.balanceOf(address(this)), 0);
         assertReserves(1000, 1000);
@@ -103,7 +105,9 @@ contract ReanswapV2PairTest is Test {
 
         pair.mint(address(this)); // + 1 LP
 
-        pair.burn();
+        uint256 liquidity = pair.balanceOf(address(this));
+        pair.transfer(address(pair), liquidity);
+        pair.burn(address(this));
 
         assertEq(pair.balanceOf(address(this)), 0);
         assertReserves(1500, 1000);
@@ -132,7 +136,9 @@ contract ReanswapV2PairTest is Test {
 
         assertEq(pair.balanceOf(address(this)), 1 ether);
 
-        pair.burn();
+        uint256 liquidity = pair.balanceOf(address(this));
+        pair.transfer(address(pair), liquidity);
+        pair.burn(address(this));
 
         assertEq(pair.balanceOf(address(this)), 0);
         assertReserves(1.5 ether, 1 ether);
@@ -308,6 +314,6 @@ contract TestUser {
     function removeLiquidity(address pairAddress_) public {
         uint256 liquidity = ERC20(pairAddress_).balanceOf(address(this));
         ERC20(pairAddress_).transfer(pairAddress_, liquidity);
-        ReanswapV2Pair(pairAddress_).burn();
+        ReanswapV2Pair(pairAddress_).burn(address(this));
     }
 }
