@@ -117,5 +117,20 @@ contract ReanswapV2LibraryTest is Test {
             1.5 ether
         );
         assertEq(amountOut, 1495);
-    }    
+    }
+
+    function testGetAmountOutZeroInputAmount() public {
+        vm.expectRevert(encodeError("InsufficientAmount()"));
+        ReanswapV2Library.getAmountOut(0, 1 ether, 1.5 ether);
+    }
+
+    function testGetAmountOutZeroInputReserve() public {
+        vm.expectRevert(encodeError("InsufficientLiquidity()"));
+        ReanswapV2Library.getAmountOut(1000, 0, 1.5 ether);
+    }
+
+    function testGetAmountOutZeroOutputReserve() public {
+        vm.expectRevert(encodeError("InsufficientLiquidity()"));
+        ReanswapV2Library.getAmountOut(1000, 1 ether, 0);
+    }
 }
