@@ -9,6 +9,7 @@ contract ReanswapV2Router {
     error InsufficientAAmount();
     error InsufficientBAmount();
     error SafeTransferFailed();
+    error InsufficientOutputAmount();
 
     IReanswapV2Factory factory;
 
@@ -75,6 +76,56 @@ contract ReanswapV2Router {
 
         if (amountA < amountAMin) revert InsufficientAAmount();
         if (amountB < amountBMin) revert InsufficientBAmount();
+    }
+
+    function swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to
+    ) public returns (uint256[] memory amounts) {
+        amounts = ReanswapV2Library.getAmountsOut(
+            address(factory),
+            amountIn,
+            path
+        );
+        if (amounts[amounts.length - 1] < amountOutMin)
+            revert InsufficientOutputAmount();
+        _safeTransferFrom(
+            path[0],
+            msg.sender,
+            ReanswapV2Library.pairFor(address(factory), path[0], path[1]),
+            amounts[0]
+        );
+        _swap(amounts, path, to);
+    }
+
+
+    /* Private functions */   
+
+    function _swap(
+        uint256[] memory amounts,
+        address[] memory path,
+        address to_
+    ) internal {
+        for (uint256 i; i < path.length - 1; i++) {
+            (address input, address output) = (path[i], path[i + 1]);
+            (address token0, ) = ReanswapV2Library.sortTokens(input, output);
+            uint256 amountOut = amounts[i + 1];
+            (uint256 amount0Out, uint256 amount1Out) = input == token0
+                ? (uint256(0), amountOut)
+                : (amountOut, uint256(0));
+            address to = i < path.length - 2
+                ? ReanswapV2Library.pairFor(
+                    address(factory),
+                    output,
+                    path[i + 2]
+                )
+                : to_;
+            IReanswapV2Pair(
+                ReanswapV2Library.pairFor(address(factory), input, output)
+            ).swap(amount0Out, amount1Out, to);
+        }
     }
 
     function _calculateLiquidity(

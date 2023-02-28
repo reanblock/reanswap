@@ -25,7 +25,6 @@ interface IReanswapV2Pair {
     function swap(
         uint256,
         uint256,
-        address,
-        bytes calldata
+        address
     ) external;
 }

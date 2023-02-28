@@ -351,4 +351,54 @@ contract ReanswapV2RouterTest is Test {
             address(this)
         );
     }
+
+    function testSwapExactTokensForTokens() public {
+        tokenA.approve(address(router), 1 ether);
+        tokenB.approve(address(router), 2 ether);
+        tokenC.approve(address(router), 1 ether);
+
+        router.addLiquidity(
+            address(tokenA),
+            address(tokenB),
+            1 ether,
+            1 ether,
+            1 ether,
+            1 ether,
+            address(this)
+        );
+
+        router.addLiquidity(
+            address(tokenB),
+            address(tokenC),
+            1 ether,
+            1 ether,
+            1 ether,
+            1 ether,
+            address(this)
+        );
+
+        address[] memory path = new address[](3);
+        path[0] = address(tokenA);
+        path[1] = address(tokenB);
+        path[2] = address(tokenC);
+
+        tokenA.approve(address(router), 0.3 ether);
+        router.swapExactTokensForTokens(
+            0.3 ether,
+            0.1 ether,
+            path,
+            address(this)
+        );
+
+        // Swap 0.3 TKNA for ~0.186 TKNB
+        assertEq(
+            tokenA.balanceOf(address(this)),
+            20 ether - 1 ether - 0.3 ether
+        );
+        assertEq(tokenB.balanceOf(address(this)), 20 ether - 2 ether);
+        assertEq(
+            tokenC.balanceOf(address(this)),
+            20 ether - 1 ether + 0.186691414219734305 ether
+        );
+    }
 }
