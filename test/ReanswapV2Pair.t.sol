@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import "../src/ReanswapV2Pair.sol";
+import "../src/interfaces/IReanswapV2Pair.sol";
 import "./mocks/ERC20Mintable.sol";
 
 contract ReanswapV2PairTest is Test {
@@ -16,7 +17,8 @@ contract ReanswapV2PairTest is Test {
 
         token0 = new ERC20Mintable("Token A", "TKNA");
         token1 = new ERC20Mintable("Token B", "TKNB");
-        pair = new ReanswapV2Pair(address(token0), address(token1));
+        pair = new ReanswapV2Pair();
+        IReanswapV2Pair(address(pair)).initialize(address(token0), address(token1));
 
         token0.mint(10 ether, address(this));
         token1.mint(10 ether, address(this));

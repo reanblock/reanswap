@@ -19,6 +19,7 @@ error InsufficientLiquidity();
 error InvalidK();
 error TransferFailed();
 error BalanceOverflow();
+error AlreadyInitialized();
 
 contract ReanswapV2Pair is ERC20, Math {
     using UQ112x112 for uint224;
@@ -57,9 +58,14 @@ contract ReanswapV2Pair is ERC20, Math {
         isEntered = false;
     }
 
-    constructor(address _token0, address _token1) ERC20("ReanswapV2 Pair", "RUNIV2", 18) {
-        token0 = _token0;
-        token1 = _token1;
+    constructor() ERC20("ReanswapV2 Pair", "RUNIV2", 18) {}
+
+    function initialize(address token0_, address token1_) public {
+        if (token0 != address(0) || token1 != address(0))
+            revert AlreadyInitialized();
+
+        token0 = token0_;
+        token1 = token1_;
     }
 
     function getReserves()
