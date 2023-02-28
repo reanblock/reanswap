@@ -250,4 +250,105 @@ contract ReanswapV2RouterTest is Test {
         assertEq(tokenA.balanceOf(address(this)), 20 ether - 1000);
         assertEq(tokenB.balanceOf(address(this)), 20 ether - 1000);
     }
+
+    function testRemoveLiquidityPartially() public {
+        tokenA.approve(address(router), 1 ether);
+        tokenB.approve(address(router), 1 ether);
+
+        router.addLiquidity(
+            address(tokenA),
+            address(tokenB),
+            1 ether,
+            1 ether,
+            1 ether,
+            1 ether,
+            address(this)
+        );
+
+        address pairAddress = factory.pairs(address(tokenA), address(tokenB));
+        ReanswapV2Pair pair = ReanswapV2Pair(pairAddress);
+        uint256 liquidity = pair.balanceOf(address(this));
+
+        liquidity = (liquidity * 3) / 10;
+        pair.approve(address(router), liquidity);
+
+        router.removeLiquidity(
+            address(tokenA),
+            address(tokenB),
+            liquidity,
+            0.3 ether - 300,
+            0.3 ether - 300,
+            address(this)
+        );
+
+        (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
+        assertEq(reserve0, 0.7 ether + 300);
+        assertEq(reserve1, 0.7 ether + 300);
+        assertEq(pair.balanceOf(address(this)), 0.7 ether - 700);
+        assertEq(pair.totalSupply(), 0.7 ether + 300);
+        assertEq(tokenA.balanceOf(address(this)), 20 ether - 0.7 ether - 300);
+        assertEq(tokenB.balanceOf(address(this)), 20 ether - 0.7 ether - 300);
+    }
+
+    function testRemoveLiquidityInsufficientAAmount() public {
+        tokenA.approve(address(router), 1 ether);
+        tokenB.approve(address(router), 1 ether);
+
+        router.addLiquidity(
+            address(tokenA),
+            address(tokenB),
+            1 ether,
+            1 ether,
+            1 ether,
+            1 ether,
+            address(this)
+        );
+
+        address pairAddress = factory.pairs(address(tokenA), address(tokenB));
+        ReanswapV2Pair pair = ReanswapV2Pair(pairAddress);
+        uint256 liquidity = pair.balanceOf(address(this));
+
+        pair.approve(address(router), liquidity);
+
+        vm.expectRevert(encodeError("InsufficientAAmount()"));
+        router.removeLiquidity(
+            address(tokenA),
+            address(tokenB),
+            liquidity,
+            1 ether,
+            1 ether - 1000,
+            address(this)
+        );
+    }
+
+    function testRemoveLiquidityInsufficientBAmount() public {
+        tokenA.approve(address(router), 1 ether);
+        tokenB.approve(address(router), 1 ether);
+
+        router.addLiquidity(
+            address(tokenA),
+            address(tokenB),
+            1 ether,
+            1 ether,
+            1 ether,
+            1 ether,
+            address(this)
+        );
+
+        address pairAddress = factory.pairs(address(tokenA), address(tokenB));
+        ReanswapV2Pair pair = ReanswapV2Pair(pairAddress);
+        uint256 liquidity = pair.balanceOf(address(this));
+
+        pair.approve(address(router), liquidity);
+
+        vm.expectRevert(encodeError("InsufficientBAmount()"));
+        router.removeLiquidity(
+            address(tokenA),
+            address(tokenB),
+            liquidity,
+            1 ether - 1000,
+            1 ether,
+            address(this)
+        );
+    }
 }
