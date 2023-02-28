@@ -56,6 +56,27 @@ contract ReanswapV2Router {
         liquidity = IReanswapV2Pair(pairAddress).mint(to);
     }
 
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 liquidity,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to
+    ) public returns (uint256 amountA, uint256 amountB) {
+        address pair = ReanswapV2Library.pairFor(
+            address(factory),
+            tokenA,
+            tokenB
+        );
+
+        IReanswapV2Pair(pair).transferFrom(msg.sender, pair, liquidity);
+        (amountA, amountB) = IReanswapV2Pair(pair).burn(to);
+
+        if (amountA < amountAMin) revert InsufficientAAmount();
+        if (amountB < amountBMin) revert InsufficientBAmount();
+    }
+
     function _calculateLiquidity(
         address tokenA,
         address tokenB,
