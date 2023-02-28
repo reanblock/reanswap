@@ -68,4 +68,45 @@ contract ReanswapV2LibraryTest is Test {
         assertEq(reserve0, 1.1 ether);
         assertEq(reserve1, 0.8 ether);
     }
+
+    function testQuote() public {
+        uint256 amountOut = ReanswapV2Library.quote(1 ether, 1 ether, 1 ether);
+        assertEq(amountOut, 1 ether);
+
+        amountOut = ReanswapV2Library.quote(1 ether, 2 ether, 1 ether);
+        assertEq(amountOut, 0.5 ether);
+
+        amountOut = ReanswapV2Library.quote(1 ether, 1 ether, 2 ether);
+        assertEq(amountOut, 2 ether);
+    }
+
+    function testPairFor() public {
+        address pairAddress = ReanswapV2Library.pairFor(
+            address(factory),
+            address(tokenA),
+            address(tokenB)
+        );
+
+        assertEq(pairAddress, factory.pairs(address(tokenA), address(tokenB)));
+    }
+
+    function testPairForTokensSorting() public {
+        address pairAddress = ReanswapV2Library.pairFor(
+            address(factory),
+            address(tokenB),
+            address(tokenA)
+        );
+
+        assertEq(pairAddress, factory.pairs(address(tokenA), address(tokenB)));
+    }
+
+    function testPairForNonexistentFactory() public {
+        address pairAddress = ReanswapV2Library.pairFor(
+            address(0xaabbcc),
+            address(tokenB),
+            address(tokenA)
+        );
+
+        assertEq(pairAddress, 0x74cbE2789f6712fc96018dCc42D8ecC1a87285d6);
+    }    
 }
