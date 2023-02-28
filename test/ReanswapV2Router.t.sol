@@ -53,4 +53,39 @@ contract ReanswapV2RouterTest is Test {
         address pairAddress = factory.pairs(address(tokenA), address(tokenB));
         assertEq(pairAddress, 0xED7394184D1bd12E5fE23e076A6940EA905ED338);
     }
+
+    function testAddLiquidityNoPair() public {
+        tokenA.approve(address(router), 1 ether);
+        tokenB.approve(address(router), 1 ether);
+
+        (uint256 amountA, uint256 amountB, uint256 liquidity) = router
+            .addLiquidity(
+                address(tokenA),
+                address(tokenB),
+                1 ether,
+                1 ether,
+                1 ether,
+                1 ether,
+                address(this)
+            );
+
+        assertEq(amountA, 1 ether);
+        assertEq(amountB, 1 ether);
+        assertEq(liquidity, 1 ether - 1000);
+
+        address pairAddress = factory.pairs(address(tokenA), address(tokenB));
+
+        assertEq(tokenA.balanceOf(pairAddress), 1 ether);
+        assertEq(tokenB.balanceOf(pairAddress), 1 ether);
+
+        ReanswapV2Pair pair = ReanswapV2Pair(pairAddress);
+
+        assertEq(pair.token0(), address(tokenB));
+        assertEq(pair.token1(), address(tokenA));
+        assertEq(pair.totalSupply(), 1 ether);
+        assertEq(pair.balanceOf(address(this)), 1 ether - 1000);
+
+        assertEq(tokenA.balanceOf(address(this)), 19 ether);
+        assertEq(tokenB.balanceOf(address(this)), 19 ether);
+    }
 }
