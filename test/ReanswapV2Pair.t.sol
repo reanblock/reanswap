@@ -31,7 +31,7 @@ contract ReanswapV2PairTest is Test {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
 
-        pair.mint();
+        pair.mint(address(this));
 
         assertEq(pair.balanceOf(address(this)), 1 ether - 1000);
         assertReserves(1 ether, 1 ether);
@@ -42,12 +42,12 @@ contract ReanswapV2PairTest is Test {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
 
-        pair.mint(); // + 1 LP
+        pair.mint(address(this)); // + 1 LP
 
         token0.transfer(address(pair), 2 ether);
         token1.transfer(address(pair), 2 ether);
 
-        pair.mint(); // + 2 LP
+        pair.mint(address(this)); // + 2 LP
 
         assertEq(pair.balanceOf(address(this)), 3 ether - 1000);
         assertEq(pair.totalSupply(), 3 ether);
@@ -58,14 +58,14 @@ contract ReanswapV2PairTest is Test {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
 
-        pair.mint(); // + 1 LP
+        pair.mint(address(this)); // + 1 LP
         assertEq(pair.balanceOf(address(this)), 1 ether - 1000);
         assertReserves(1 ether, 1 ether);
 
         token0.transfer(address(pair), 2 ether);
         token1.transfer(address(pair), 1 ether);
 
-        pair.mint(); // + 1 LP
+        pair.mint(address(this)); // + 1 LP
         assertEq(pair.balanceOf(address(this)), 2 ether - 1000);
         assertReserves(3 ether, 2 ether);
     }
@@ -75,14 +75,14 @@ contract ReanswapV2PairTest is Test {
         token1.transfer(address(pair), 1000);
 
         vm.expectRevert(encodeError("InsufficientLiquidityMinted()"));
-        pair.mint();
+        pair.mint(address(this));
     }
 
     function testBurn() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
 
-        pair.mint();
+        pair.mint(address(this));
         pair.burn();
 
         assertEq(pair.balanceOf(address(this)), 0);
@@ -96,12 +96,12 @@ contract ReanswapV2PairTest is Test {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 1 ether);
 
-        pair.mint();
+        pair.mint(address(this));
 
         token0.transfer(address(pair), 2 ether);
         token1.transfer(address(pair), 1 ether);
 
-        pair.mint(); // + 1 LP
+        pair.mint(address(this)); // + 1 LP
 
         pair.burn();
 
@@ -128,7 +128,7 @@ contract ReanswapV2PairTest is Test {
         token0.transfer(address(pair), 2 ether);
         token1.transfer(address(pair), 1 ether);
 
-        pair.mint(); // + 1 LP
+        pair.mint(address(this)); // + 1 LP
 
         assertEq(pair.balanceOf(address(this)), 1 ether);
 
@@ -144,7 +144,7 @@ contract ReanswapV2PairTest is Test {
     function testSwapBasicScenario() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 2 ether);
-        pair.mint();
+        pair.mint(address(this));
 
         uint256 amountOut = 0.181322178776029826 ether;
         token0.transfer(address(pair), 0.1 ether);
@@ -166,7 +166,7 @@ contract ReanswapV2PairTest is Test {
     function testSwapBasicScenarioReverseDirection() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 2 ether);
-        pair.mint();
+        pair.mint(address(this));
 
         uint256 amountOut = 0.09 ether;
         token1.transfer(address(pair), 0.2 ether);
@@ -188,7 +188,7 @@ contract ReanswapV2PairTest is Test {
     function testSwapBidirectional() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 2 ether);
-        pair.mint();
+        pair.mint(address(this));
 
         token0.transfer(address(pair), 0.1 ether);
         token1.transfer(address(pair), 0.2 ether);
@@ -210,7 +210,7 @@ contract ReanswapV2PairTest is Test {
     function testSwapZeroOut() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 2 ether);
-        pair.mint();
+        pair.mint(address(this));
 
         vm.expectRevert(encodeError("InsufficientOutputAmount()"));
         pair.swap(0, 0, address(this));
@@ -219,7 +219,7 @@ contract ReanswapV2PairTest is Test {
     function testSwapInsufficientLiquidity() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 2 ether);
-        pair.mint();
+        pair.mint(address(this));
 
         vm.expectRevert(encodeError("InsufficientLiquidity()"));
         pair.swap(0, 2.1 ether, address(this));
@@ -231,7 +231,7 @@ contract ReanswapV2PairTest is Test {
     function testSwapUnderpriced() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 2 ether);
-        pair.mint();
+        pair.mint(address(this));
 
         token0.transfer(address(pair), 0.1 ether);
         pair.swap(0, 0.09 ether, address(this));
@@ -252,7 +252,7 @@ contract ReanswapV2PairTest is Test {
     function testSwapOverpriced() public {
         token0.transfer(address(pair), 1 ether);
         token1.transfer(address(pair), 2 ether);
-        pair.mint();
+        pair.mint(address(this));
 
         token0.transfer(address(pair), 0.1 ether);
 
@@ -302,7 +302,7 @@ contract TestUser {
         ERC20(token0Address_).transfer(pairAddress_, amount0_);
         ERC20(token1Address_).transfer(pairAddress_, amount1_);
 
-        ReanswapV2Pair(pairAddress_).mint();
+        ReanswapV2Pair(pairAddress_).mint(address(this));
     }
 
     function removeLiquidity(address pairAddress_) public {
