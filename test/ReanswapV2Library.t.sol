@@ -108,5 +108,14 @@ contract ReanswapV2LibraryTest is Test {
         );
 
         assertEq(pairAddress, 0x4a311C1e8ad8BeA8Cb696b7d82a5f276A71dc589);
+    }
+
+    function testGetAmountOut() public {
+        uint256 amountOut = ReanswapV2Library.getAmountOut(
+            1000,
+            1 ether,
+            1.5 ether
+        );
+        assertEq(amountOut, 1495);
     }    
 }
