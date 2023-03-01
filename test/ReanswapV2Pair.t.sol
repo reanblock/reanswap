@@ -278,6 +278,17 @@ contract ReanswapV2PairTest is Test {
         assertReserves(1 ether, 2 ether);
     }
 
+    function testSwapUnpaidFee() public {
+        token0.transfer(address(pair), 1 ether);
+        token1.transfer(address(pair), 2 ether);
+        pair.mint(address(this));
+
+        token0.transfer(address(pair), 0.1 ether);
+
+        vm.expectRevert(encodeError("InvalidK()"));
+        pair.swap(0, 0.181322178776029827 ether, address(this));
+    }
+
     // helper functions
 
     function assertReserves(uint256 expectedReserve0, uint256 expectedReserve1)
