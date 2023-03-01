@@ -65,6 +65,10 @@ library ReanswapV2Library {
         );
     }
 
+    /* 
+        Swap formulae: (x + rΔx)(y − Δy) = xy 
+    */
+
     function getAmountOut(
         uint256 amountIn,
         uint256 reserveIn,
@@ -78,6 +82,22 @@ library ReanswapV2Library {
         uint256 denominator = (reserveIn * 1000) + amountInWithFee;
 
         return numerator / denominator;
+    }
+
+    function getAmountIn(
+        uint256 amountOut,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) public pure returns (uint256) {
+        if (amountOut == 0) revert InsufficientAmount();
+        if (reserveIn == 0 || reserveOut == 0) revert InsufficientLiquidity();
+
+        uint256 numerator = reserveIn * amountOut * 1000;
+        uint256 denominator = (reserveOut - amountOut) * 997;
+
+        // in Solidity rounds result down,
+        // therefore the result gets truncated so add 1 here
+        return (numerator / denominator) + 1;
     }
 
     function getAmountsOut(
@@ -96,6 +116,27 @@ library ReanswapV2Library {
                 path[i + 1]
             );
             amounts[i + 1] = getAmountOut(amounts[i], reserve0, reserve1);
+        }
+
+        return amounts;
+    }
+
+    function getAmountsIn(
+        address factory,
+        uint256 amountOut,
+        address[] memory path
+    ) public returns (uint256[] memory) {
+        if (path.length < 2) revert InvalidPath();
+        uint256[] memory amounts = new uint256[](path.length);
+        amounts[amounts.length - 1] = amountOut;
+
+        for (uint256 i = path.length - 1; i > 0; i--) {
+            (uint256 reserve0, uint256 reserve1) = getReserves(
+                factory,
+                path[i - 1],
+                path[i]
+            );
+            amounts[i - 1] = getAmountIn(amounts[i], reserve0, reserve1);
         }
 
         return amounts;
