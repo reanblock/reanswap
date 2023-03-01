@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import "solmate/tokens/ERC20.sol";
 import "./libraries/Math.sol";
 import "./libraries/UQ112x112.sol";
+import "./interfaces/IReanswapV2Callee.sol";
 
 interface IERC20 {
     function balanceOf(address) external returns (uint256);
@@ -135,7 +136,8 @@ contract ReanswapV2Pair is ERC20, Math {
     function swap(
         uint256 amount0Out,
         uint256 amount1Out,
-        address to
+        address to,
+        bytes calldata data
     ) public nonReentrant {
         // check user actually wants to trade something!
         if (amount0Out == 0 && amount1Out == 0)
@@ -149,6 +151,13 @@ contract ReanswapV2Pair is ERC20, Math {
 
         if (amount0Out > 0) _safeTransfer(token0, to, amount0Out);
         if (amount1Out > 0) _safeTransfer(token1, to, amount1Out);
+        if (data.length > 0)
+            IReanswapV2Callee(to).reanswapV2Call(
+                msg.sender,
+                amount0Out,
+                amount1Out,
+                data
+            );
 
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));

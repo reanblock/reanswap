@@ -107,7 +107,7 @@ contract ReanswapV2LibraryTest is Test {
             address(tokenA)
         );
 
-        assertEq(pairAddress, 0x240b31106252f34Bf7F10fb4b588ad736e94282b);
+        assertEq(pairAddress, 0x76969cbC78b8bc02e06566ff68Caf8C6e7c1bBCa);
     }
 
     function testGetAmountOut() public {
