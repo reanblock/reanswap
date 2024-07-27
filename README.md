@@ -43,7 +43,7 @@ https://github.com/protofire/solhint
 Run `solhint` for all contracts:
 
 ```
-solhint *.sol
+ solhint src/*.sol
 ```
 
 ### Slither

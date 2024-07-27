@@ -51,7 +51,7 @@ contract ReanswapV2RouterTest is Test {
         );
 
         address pairAddress = factory.pairs(address(tokenA), address(tokenB));
-        assertEq(pairAddress, 0x3fE35C86B0819661227D4fBBD1899A27eAd3Fa9f);
+        assertEq(pairAddress, 0x5F96E56eFA42cd3cF822aa2CEE625bd70E9bFDDe);
     }
 
     function testAddLiquidityNoPair() public {

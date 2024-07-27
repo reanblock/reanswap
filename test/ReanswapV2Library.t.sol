@@ -102,12 +102,12 @@ contract ReanswapV2LibraryTest is Test {
 
     function testPairForNonexistentFactory() public {
         address pairAddress = ReanswapV2Library.pairFor(
-            address(0xaabbcc),
+            address(0xaabbccddd),
             address(tokenB),
             address(tokenA)
         );
 
-        assertEq(pairAddress, 0x76969cbC78b8bc02e06566ff68Caf8C6e7c1bBCa);
+        assertEq(pairAddress, 0xAB41b02b2abd9F2714d7fa6a1Fb10E0f09D8C804);
     }
 
     function testGetAmountOut() public {

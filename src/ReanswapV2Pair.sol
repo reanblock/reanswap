@@ -6,6 +6,8 @@ import "./libraries/Math.sol";
 import "./libraries/UQ112x112.sol";
 import "./interfaces/IReanswapV2Callee.sol";
 
+// import "forge-std/Test.sol";
+
 interface IERC20 {
     function balanceOf(address) external returns (uint256);
 
@@ -99,11 +101,19 @@ contract ReanswapV2Pair is ERC20, Math {
             );
         }
 
+        // console.log("liquidity: ", liquidity);
+        // console.log("amount0: ", amount0);
+        // console.log("amount1: ", amount1);
+        // console.log("reserve0: ", reserve0);
+        // console.log("reserve1: ", reserve1);
+        // console.log("totalSupply: ", totalSupply);
+
         if (liquidity <= 0) revert InsufficientLiquidityMinted();
 
         _mint(to, liquidity);
 
         _update(balance0, balance1, reserve0_, reserve1_);
+
 
         emit Mint(to, amount0, amount1);
     }
@@ -195,7 +205,6 @@ contract ReanswapV2Pair is ERC20, Math {
         if (balance0 > type(uint112).max || balance1 > type(uint112).max)
             revert BalanceOverflow();
 
-        // 
         // https://docs.uniswap.org/assets/images/v2_onchain_price_data-c051ebca6a5882e3f2ad758fa46cbf5e.png
         // https://docs.uniswap.org/assets/images/v2_twap-fdc82ab82856196510db6b421cce9204.png
 

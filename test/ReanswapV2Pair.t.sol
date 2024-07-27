@@ -145,6 +145,19 @@ contract ReanswapV2PairTest is Test {
         assertEq(pair.totalSupply(), 1 ether);
         assertEq(token0.balanceOf(address(this)), 10 ether - 0.5 ether);
         assertEq(token1.balanceOf(address(this)), 10 ether);
+
+        // console.log("TestUser Token0 balance (before): ", token0.balanceOf(address(testUser)));
+
+        // confirm the test user gets the 0.5 ether lost by the bad lp actor!
+        changePrank(address(testUser));
+        liquidity = pair.balanceOf(address(testUser));
+        // console.log("TestUser transfers liquidity: ", liquidity);
+        pair.transfer(address(pair), liquidity);
+        pair.burn(address(testUser));
+
+        assertEq(token0.balanceOf(address(testUser)), 10 ether + 0.5 ether - 1500);
+
+        // console.log("TestUser Token0 balance (after): ", token0.balanceOf(address(testUser)));
     }
 
     function testSwapBasicScenario() public {
