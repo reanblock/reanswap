@@ -1,6 +1,8 @@
 # Reanswap
 
-Reanswap - a Uniswap V2 clone for educational purposes only
+Reanswap - a Uniswap V2 clone for educational purposes only.
+
+Based on the [Programming DeFi: Uniswap V2](https://jeiwan.net/posts/programming-defi-uniswapv2-1/) series.
 
 ## Installation
 
